@@ -2,6 +2,7 @@ import { useStudyData } from './hooks/useStudyData';
 import { ExamHeader } from './components/ExamHeader';
 import { SubjectList } from './components/SubjectList';
 import { Dashboard } from './components/Dashboard';
+import { ExamTimetable } from './components/ExamTimetable';
 
 function App() {
   const {
@@ -13,6 +14,8 @@ function App() {
     addTopic,
     toggleTopic,
     deleteTopic,
+    addExam,
+    deleteExam,
     stats,
   } = useStudyData();
 
@@ -57,6 +60,20 @@ function App() {
             </div>
             <Dashboard subjects={data.subjects} stats={stats} />
           </div>
+        </div>
+
+        <div className="mt-8">
+          <div className="flex items-center gap-3 px-1 mb-4">
+            <span className="bg-gradient-to-br from-purple-500 to-purple-600 text-white w-10 h-10 rounded-full flex items-center justify-center text-base font-bold shadow-lg">
+              3
+            </span>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Exam Timetable</h2>
+          </div>
+          <ExamTimetable
+            exams={data.exams || []}
+            onAddExam={addExam}
+            onDeleteExam={deleteExam}
+          />
         </div>
       </div>
 

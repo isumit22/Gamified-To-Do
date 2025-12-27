@@ -13,9 +13,18 @@ export interface Subject {
   topics: Topic[];
 }
 
+export interface Exam {
+  id: string;
+  subject: string;
+  examDate: string;
+  examTime: string;
+  status: 'pending' | 'completed';
+}
+
 export interface StudyData {
   examName: string;
   subjects: Subject[];
+  exams?: Exam[];
   createdAt: string;
   lastStudyDate?: string;
   streak: number;
@@ -72,6 +81,7 @@ const getInitialData = (): StudyData => {
   return {
     examName: '',
     subjects: [],
+    exams: [],
     createdAt: new Date().toISOString(),
     streak: 0,
   };
@@ -178,6 +188,36 @@ export const useStudyData = () => {
     }));
   };
 
+  const addExam = (subject: string, examDate: string, examTime: string) => {
+    const newExam: Exam = {
+      id: createId(),
+      subject,
+      examDate,
+      examTime,
+      status: 'pending',
+    };
+    setData((prev) => ({
+      ...prev,
+      exams: [...(prev.exams || []), newExam],
+    }));
+  };
+
+  const deleteExam = (examId: string) => {
+    setData((prev) => ({
+      ...prev,
+      exams: (prev.exams || []).filter((e) => e.id !== examId),
+    }));
+  };
+
+  const updateExamStatus = (examId: string, status: 'pending' | 'completed') => {
+    setData((prev) => ({
+      ...prev,
+      exams: (prev.exams || []).map((e) =>
+        e.id === examId ? { ...e, status } : e
+      ),
+    }));
+  };
+
   const totalTopics = data.subjects.reduce((acc, s) => acc + s.topics.length, 0);
   const completedTopics = data.subjects.reduce(
     (acc, s) => acc + s.topics.filter((t) => t.done).length,
@@ -196,6 +236,9 @@ export const useStudyData = () => {
     addTopic,
     toggleTopic,
     deleteTopic,
+    addExam,
+    deleteExam,
+    updateExamStatus,
     stats: {
       totalTopics,
       completedTopics,
