@@ -213,7 +213,7 @@ export const ExamTimetable = ({ exams, onAddExam, onDeleteExam }: ExamTimetableP
                     <div className="font-bold text-gray-800 text-sm sm:text-base truncate">
                       {exam.subject}
                     </div>
-                    <div className="text-xs text-gray-600 flex items-center gap-2">
+                    <div className="text-xs text-gray-700 font-medium flex items-center gap-2">
                       <span>{formatDate(exam.examDate)}</span>
                       <span>•</span>
                       <span className="flex items-center gap-1">
@@ -261,7 +261,7 @@ export const ExamTimetable = ({ exams, onAddExam, onDeleteExam }: ExamTimetableP
                 <CheckCircle2 size={16} className="text-green-500 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm text-gray-600 line-through truncate">{exam.subject}</div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-gray-600 font-medium">
                     {formatDate(exam.examDate)} • {formatTime(exam.examTime)}
                   </div>
                 </div>
