@@ -13,9 +13,19 @@ export interface Subject {
   topics: Topic[];
 }
 
+export interface Exam {
+  id: string;
+  subject: string;
+  examDate: string; // YYYY-MM-DD
+  examTime: string; // HH:MM
+  status: 'pending' | 'completed';
+  completedAt?: string;
+}
+
 export interface StudyData {
   examName: string;
   subjects: Subject[];
+  exams: Exam[];
   createdAt: string;
   lastStudyDate?: string;
   streak: number;
@@ -56,7 +66,8 @@ const normalizeIds = (data: StudyData): StudyData => {
     });
     return { ...s, topics };
   });
-  return { ...data, subjects };
+  // Ensure exams array exists for backward compatibility
+  return { ...data, subjects, exams: data.exams || [] };
 };
 
 const getInitialData = (): StudyData => {
@@ -69,9 +80,23 @@ const getInitialData = (): StudyData => {
       // If corrupted, fall back to default structure
     }
   }
+  // Return demo data for new users
   return {
-    examName: '',
+    examName: 'Mid Semester Exams 2025-26',
     subjects: [],
+    exams: [
+      { id: createId(), subject: 'COI', examDate: '2025-12-29', examTime: '09:00', status: 'pending' },
+      { id: createId(), subject: 'Physics', examDate: '2025-12-30', examTime: '09:00', status: 'pending' },
+      { id: createId(), subject: 'DBMS', examDate: '2025-12-31', examTime: '09:00', status: 'pending' },
+      { id: createId(), subject: 'Python', examDate: '2026-01-01', examTime: '13:00', status: 'pending' },
+      { id: createId(), subject: 'MLT', examDate: '2026-01-02', examTime: '09:00', status: 'pending' },
+      { id: createId(), subject: 'Web Tech', examDate: '2026-01-06', examTime: '09:00', status: 'pending' },
+      { id: createId(), subject: 'DS', examDate: '2026-01-07', examTime: '13:00', status: 'pending' },
+      { id: createId(), subject: 'DAA', examDate: '2026-01-08', examTime: '09:00', status: 'pending' },
+      { id: createId(), subject: 'OOSD', examDate: '2026-01-12', examTime: '09:00', status: 'pending' },
+      { id: createId(), subject: 'COA', examDate: '2026-01-13', examTime: '13:00', status: 'pending' },
+      { id: createId(), subject: 'Maths 4', examDate: '2026-01-19', examTime: '13:00', status: 'pending' },
+    ],
     createdAt: new Date().toISOString(),
     streak: 0,
   };
@@ -89,14 +114,66 @@ export const useStudyData = () => {
   };
 
   const resetAll = () => {
-    const fresh: StudyData = {
-      examName: '',
+    // Reset subjects and topics but preserve exams
+    setData((prev) => ({
+      ...prev,
+      examName: prev.examName,
       subjects: [],
-      createdAt: new Date().toISOString(),
       streak: 0,
-    };
-    setData(fresh);
+      lastStudyDate: undefined,
+    }));
   };
+
+  const addExam = (subject: string, examDate: string, examTime: string) => {
+    const newExam: Exam = {
+      id: createId(),
+      subject,
+      examDate,
+      examTime,
+      status: 'pending',
+    };
+    setData((prev) => ({
+      ...prev,
+      exams: [...prev.exams, newExam].sort((a, b) => {
+        const dateA = new Date(`${a.examDate}T${a.examTime}`);
+        const dateB = new Date(`${b.examDate}T${b.examTime}`);
+        return dateA.getTime() - dateB.getTime();
+      }),
+    }));
+  };
+
+  const deleteExam = (examId: string) => {
+    setData((prev) => ({
+      ...prev,
+      exams: prev.exams.filter((e) => e.id !== examId),
+    }));
+  };
+
+  const autoCompleteExams = () => {
+    const now = new Date();
+    let updated = false;
+    const updatedExams = data.exams.map((exam) => {
+      if (exam.status === 'pending') {
+        const examDateTime = new Date(`${exam.examDate}T${exam.examTime}`);
+        if (now > examDateTime) {
+          updated = true;
+          return { ...exam, status: 'completed' as const, completedAt: now.toISOString() };
+        }
+      }
+      return exam;
+    });
+    if (updated) {
+      setData((prev) => ({ ...prev, exams: updatedExams }));
+    }
+  };
+
+  useEffect(() => {
+    // Run once on mount and then every minute
+    autoCompleteExams();
+    const interval = setInterval(autoCompleteExams, 60000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - only run on mount and via interval
 
   const addSubject = (name: string) => {
     const newSubject: Subject = {
@@ -196,6 +273,9 @@ export const useStudyData = () => {
     addTopic,
     toggleTopic,
     deleteTopic,
+    addExam,
+    deleteExam,
+    autoCompleteExams,
     stats: {
       totalTopics,
       completedTopics,

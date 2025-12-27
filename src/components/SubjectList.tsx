@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Plus, Trash2, CheckCircle, Circle, BookOpen } from 'lucide-react';
 import { Subject } from '../hooks/useStudyData';
-import { Modal } from './Modal';
 
 interface SubjectListProps {
   subjects: Subject[];
@@ -22,7 +21,6 @@ export const SubjectList = ({
 }: SubjectListProps) => {
   const [newSubject, setNewSubject] = useState('');
   const [newTopics, setNewTopics] = useState<{ [key: string]: string }>({});
-  const [modal, setModal] = useState<{ type: 'subject' | 'topic'; id: string; name: string } | null>(null);
 
   const parseTopicsInput = (input: string): string[] => {
     const lines = input
@@ -57,37 +55,16 @@ export const SubjectList = ({
     setNewTopics((prev) => ({ ...prev, [subjectId]: '' }));
   };
 
-  const handleDeleteSubject = (id: string, name: string) => {
-    setModal({ type: 'subject', id, name });
+  const handleDeleteSubject = (id: string) => {
+    onDeleteSubject(id);
   };
 
-  const handleDeleteTopic = (subjectId: string, topicId: string, topicTitle: string) => {
-    setModal({ type: 'topic', id: `${subjectId}|${topicId}`, name: topicTitle });
-  };
-
-  const confirmDelete = () => {
-    if (!modal) return;
-    if (modal.type === 'subject') {
-      onDeleteSubject(modal.id);
-    } else {
-      const [subjectId, topicId] = modal.id.split('|');
-      onDeleteTopic(subjectId, topicId);
-    }
-    setModal(null);
+  const handleDeleteTopic = (subjectId: string, topicId: string) => {
+    onDeleteTopic(subjectId, topicId);
   };
 
   return (
     <>
-      <Modal
-        isOpen={!!modal}
-        title={modal?.type === 'subject' ? 'Delete Subject?' : 'Delete Topic?'}
-        message={`Are you sure you want to delete "${modal?.name}"? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
-        onConfirm={confirmDelete}
-        onCancel={() => setModal(null)}
-        isDangerous
-      />
 
       <div className="space-y-4">
         <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow duration-200">
@@ -152,7 +129,7 @@ export const SubjectList = ({
                   )}
                 </div>
                 <button
-                  onClick={() => handleDeleteSubject(subject.id, subject.name)}
+                  onClick={() => handleDeleteSubject(subject.id)}
                   className="text-red-500 hover:text-red-700 hover:bg-red-50 transition-all duration-200 p-2 rounded-lg mt-3 sm:mt-0 ml-auto sm:ml-2"
                   title="Delete subject"
                 >
@@ -188,7 +165,7 @@ export const SubjectList = ({
                         {topic.title}
                       </span>
                       <button
-                        onClick={() => handleDeleteTopic(subject.id, topic.id, topic.title)}
+                        onClick={() => handleDeleteTopic(subject.id, topic.id)}
                         className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 hover:bg-red-50 transition-all duration-200 p-1 rounded"
                       >
                         <Trash2 size={16} />
@@ -258,7 +235,6 @@ export const SubjectList = ({
 
         .animate-slide-in {
           animation: slide-in 0.3s ease-out forwards;
-          opacity: 0;
         }
 
         .animate-scale-in {

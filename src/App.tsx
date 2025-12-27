@@ -2,6 +2,7 @@ import { useStudyData } from './hooks/useStudyData';
 import { ExamHeader } from './components/ExamHeader';
 import { SubjectList } from './components/SubjectList';
 import { Dashboard } from './components/Dashboard';
+import { ExamTimetable } from './components/ExamTimetable';
 
 function App() {
   const {
@@ -13,6 +14,8 @@ function App() {
     addTopic,
     toggleTopic,
     deleteTopic,
+    addExam,
+    deleteExam,
     stats,
   } = useStudyData();
 
@@ -24,14 +27,14 @@ function App() {
           <button
             onClick={resetAll}
             className="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-black transition-colors"
-            title="Clear all subjects/topics and reset data"
+            title="Clear all subjects and topics (exams will be preserved)"
           >
-            Reset All Data
+            Reset Study Data
           </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1 space-y-4">
+          <div className="lg:col-span-1 space-y-4 isolate">
             <div className="flex items-center gap-3 px-1">
               <span className="bg-gradient-to-br from-blue-500 to-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center text-base font-bold shadow-lg">
                 1
@@ -48,7 +51,7 @@ function App() {
             />
           </div>
 
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 space-y-4 isolate">
             <div className="flex items-center gap-3 px-1">
               <span className="bg-gradient-to-br from-green-500 to-emerald-600 text-white w-10 h-10 rounded-full flex items-center justify-center text-base font-bold shadow-lg">
                 2
@@ -56,6 +59,18 @@ function App() {
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Your Progress</h2>
             </div>
             <Dashboard subjects={data.subjects} stats={stats} />
+
+            <div className="flex items-center gap-3 px-1 mt-6">
+              <span className="bg-gradient-to-br from-purple-500 to-purple-600 text-white w-10 h-10 rounded-full flex items-center justify-center text-base font-bold shadow-lg">
+                3
+              </span>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Exam Schedule</h2>
+            </div>
+            <ExamTimetable
+              exams={data.exams}
+              onAddExam={addExam}
+              onDeleteExam={deleteExam}
+            />
           </div>
         </div>
       </div>

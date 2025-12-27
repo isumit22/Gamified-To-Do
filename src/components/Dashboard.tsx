@@ -1,4 +1,4 @@
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid, LabelList, ReferenceLine } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid, LabelList, ReferenceLine, PieChart, Pie } from 'recharts';
 import { Trophy, Flame, Zap, Target } from 'lucide-react';
 import { Subject } from '../hooks/useStudyData';
 import { getBadge, getMotivationalMessage, getLevelTitle } from '../utils/gamification';
@@ -38,10 +38,94 @@ export const Dashboard = ({ subjects, stats }: DashboardProps) => {
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
+  const donutData = [
+    { name: 'Completed', value: stats.progress, color: '#10b981' },
+    { name: 'Remaining', value: 100 - stats.progress, color: '#e5e7eb' },
+  ];
+
   return (
     <div className="space-y-4">
+      {/* Donut Progress Chart */}
+      <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg shadow-lg hover:shadow-xl p-6 transition-all duration-300 animate-stat-card overflow-hidden">
+        <div className="flex items-center gap-2 mb-4">
+          <Target size={24} className="text-blue-600" />
+          <h2 className="text-lg sm:text-xl font-bold text-gray-800">Overall Progress</h2>
+        </div>
+        
+        <div className="flex flex-col lg:flex-row items-center gap-8">
+          {/* Donut Chart */}
+          <div className="relative flex-shrink-0">
+            <ResponsiveContainer width={240} height={240}>
+              <PieChart>
+                <defs>
+                  <linearGradient id="progressGradient" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#10b981" />
+                    <stop offset="50%" stopColor="#3b82f6" />
+                    <stop offset="100%" stopColor="#8b5cf6" />
+                  </linearGradient>
+                </defs>
+                <Pie
+                  data={donutData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={70}
+                  outerRadius={100}
+                  startAngle={90}
+                  endAngle={-270}
+                  dataKey="value"
+                  strokeWidth={0}
+                  animationDuration={1000}
+                  animationBegin={0}
+                >
+                  {donutData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={index === 0 ? 'url(#progressGradient)' : entry.color}
+                    />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+            
+            {/* Center Text */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <div className="text-5xl font-black bg-gradient-to-br from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                {stats.progress}%
+              </div>
+              <div className="text-sm font-semibold text-gray-600 mt-1">
+                {stats.progress < 30 ? 'Just Started!' : stats.progress < 60 ? 'Keep Pushing!' : stats.progress < 90 ? 'Almost There!' : 'Amazing! 🎉'}
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="flex-1 grid grid-cols-2 gap-4 w-full">
+            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+              <div className="text-2xl font-bold text-green-600">{stats.completedTopics}</div>
+              <div className="text-xs text-gray-600 mt-1">Completed</div>
+            </div>
+            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+              <div className="text-2xl font-bold text-blue-600">{stats.totalTopics - stats.completedTopics}</div>
+              <div className="text-xs text-gray-600 mt-1">Remaining</div>
+            </div>
+            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+              <div className="text-2xl font-bold text-purple-600">{stats.xp}</div>
+              <div className="text-xs text-gray-600 mt-1">Total XP</div>
+            </div>
+            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+              <div className="text-2xl font-bold text-orange-600">Lv {stats.level}</div>
+              <div className="text-xs text-gray-600 mt-1">{levelTitle}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-r from-blue-50 to-green-50 border-l-4 border-blue-500 p-4 rounded-lg mt-6 animate-fade-in">
+          <p className="text-gray-800 font-medium text-sm sm:text-base">{motivationalMessage}</p>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="bg-gradient-to-br from-yellow-400 to-orange-500 text-white rounded-lg shadow-lg hover:shadow-xl p-5 sm:p-6 transition-all duration-300 transform hover:scale-105 animate-stat-card">
+        <div className="bg-gradient-to-br from-yellow-400 to-orange-500 text-white rounded-lg shadow-lg hover:shadow-xl p-5 sm:p-6 transition-all duration-300 transform hover:scale-105 animate-stat-card overflow-hidden" style={{ animationDelay: '100ms' }}>
           <div className="flex items-center gap-2 mb-3">
             <Zap size={24} />
             <span className="text-sm font-medium opacity-90">XP Points</span>
@@ -52,7 +136,7 @@ export const Dashboard = ({ subjects, stats }: DashboardProps) => {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-red-500 to-pink-600 text-white rounded-lg shadow-lg hover:shadow-xl p-5 sm:p-6 transition-all duration-300 transform hover:scale-105 animate-stat-card" style={{ animationDelay: '100ms' }}>
+        <div className="bg-gradient-to-br from-red-500 to-pink-600 text-white rounded-lg shadow-lg hover:shadow-xl p-5 sm:p-6 transition-all duration-300 transform hover:scale-105 animate-stat-card overflow-hidden" style={{ animationDelay: '200ms' }}>
           <div className="flex items-center gap-2 mb-3">
             <Flame size={24} />
             <span className="text-sm font-medium opacity-90">Streak</span>
@@ -66,37 +150,8 @@ export const Dashboard = ({ subjects, stats }: DashboardProps) => {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-lg hover:shadow-xl p-5 sm:p-6 transition-all duration-300 animate-stat-card" style={{ animationDelay: '200ms' }}>
-        <div className="flex items-center gap-2 mb-4">
-          <Target size={24} className="text-blue-600" />
-          <h2 className="text-lg sm:text-xl font-bold text-gray-800">Overall Progress</h2>
-        </div>
-
-        <div className="mb-3 flex justify-between text-sm text-gray-600">
-          <span>
-            {stats.completedTopics} / {stats.totalTopics} topics completed
-          </span>
-          <span className="font-bold text-blue-600 text-base">{stats.progress}%</span>
-        </div>
-
-        <div className="bg-gray-200 rounded-full h-4 overflow-hidden mb-4 shadow-inner">
-          <div
-            className="bg-gradient-to-r from-blue-500 via-green-500 to-emerald-500 h-full transition-all duration-700 flex items-center justify-end pr-2 relative"
-            style={{ width: `${stats.progress}%` }}
-          >
-            {stats.progress > 10 && (
-              <span className="text-xs font-bold text-white drop-shadow-md">{stats.progress}%</span>
-            )}
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-r from-blue-50 to-green-50 border-l-4 border-blue-500 p-4 rounded-lg animate-fade-in">
-          <p className="text-gray-800 font-medium text-sm sm:text-base">{motivationalMessage}</p>
-        </div>
-      </div>
-
       {stats.totalTopics > 0 && (
-        <div className="bg-white rounded-lg shadow-lg hover:shadow-xl p-5 sm:p-6 transition-all duration-300 animate-stat-card" style={{ animationDelay: '300ms' }}>
+        <div className="bg-white rounded-lg shadow-lg hover:shadow-xl p-5 sm:p-6 transition-all duration-300 animate-stat-card overflow-hidden" style={{ animationDelay: '300ms' }}>
           <div className="flex items-center gap-2 mb-4">
             <Trophy size={24} className="text-yellow-500" />
             <h2 className="text-lg sm:text-xl font-bold text-gray-800">Subject Progress</h2>
